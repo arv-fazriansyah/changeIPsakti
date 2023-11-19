@@ -11,10 +11,10 @@ check_ip() {
 
 # Fungsi untuk menghidupkan dan mematikan mode pesawat
 toggle_airplane_mode() {
-    settings put global airplane_mode_on 1 > /dev/null
-    am broadcast -a android.intent.action.AIRPLANE_MODE > /dev/null
-    settings put global airplane_mode_on 0 > /dev/null
-    am broadcast -a android.intent.action.AIRPLANE_MODE > /dev/null
+    settings put global airplane_mode_on 1 >/dev/null 2>&1
+    am broadcast -a android.intent.action.AIRPLANE_MODE >/dev/null 2>&1
+    settings put global airplane_mode_on 0 >/dev/null 2>&1
+    am broadcast -a android.intent.action.AIRPLANE_MODE >/dev/null 2>&1
 }
 
 # Loop untuk mencari IP yang sesuai
@@ -23,10 +23,10 @@ while true; do
     
     if [ -n "$rmnet0_ip" ]; then
         if check_ip "$rmnet0_ip"; then
-            echo "IP rmnet0: $rmnet0_ip sesuai." > /dev/null
+            echo "IP rmnet0: $rmnet0_ip sesuai." >/dev/null 2>&1
             break
         else
-            echo "IP rmnet0: $rmnet0_ip tidak sesuai." > /dev/null
+            echo "IP rmnet0: $rmnet0_ip tidak sesuai." >/dev/null 2>&1
             toggle_airplane_mode
         fi
     fi
@@ -37,4 +37,4 @@ while true; do
     done
 done
 
-echo "Selesai." > /dev/null
+echo "Selesai." >/dev/null 2>&1
