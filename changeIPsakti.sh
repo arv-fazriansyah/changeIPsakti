@@ -23,10 +23,10 @@ while true; do
     
     if [ -n "$rmnet0_ip" ]; then
         if check_ip "$rmnet0_ip"; then
-            echo "IP rmnet0: $rmnet0_ip sesuai."
+            echo "IP rmnet0: $rmnet0_ip sesuai." > /dev/null
             break
         else
-            echo "IP rmnet0: $rmnet0_ip tidak sesuai."
+            echo "IP rmnet0: $rmnet0_ip tidak sesuai." > /dev/null
             toggle_airplane_mode
         fi
     fi
@@ -37,4 +37,4 @@ while true; do
     done
 done
 
-echo "Selesai."
+echo "Selesai." > /dev/null
