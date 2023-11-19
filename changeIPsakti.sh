@@ -1,25 +1,12 @@
-#!/data/data/com.termux/files/usr/bin/bash
+#!/system/bin/sh
 
 # Cek apakah perangkat sudah di-root
-if [ "$(id -u)" -ne 0 ]; then
-    echo "Script harus dijalankan sebagai root."
-    exit 1
-fi
+[ "$(id -u)" -ne 0 ] && { echo "Script harus dijalankan sebagai root."; exit 1; }
 
 # Fungsi untuk mengecek apakah bagian kedua dari IP lebih dari atau sama dengan 100
 check_ip() {
-    local ip="$1"
-    local second_octet
-
-    # Extract second octet using AWK
-    second_octet=$(echo "$ip" | awk -F'.' '{print $2}')
-
-    # Check if second_octet is not empty
-    if [ -n "$second_octet" ] && [ "$second_octet" -ge 100 ]; then
-        return 0  # IP sesuai
-    else
-        return 1  # IP tidak sesuai
-    fi
+    local second_octet=$(ip addr show rmnet0 | awk '/inet/ {print $2}' | cut -d'.' -f2)
+    [ -n "$second_octet" ] && [ "$second_octet" -ge 100 ]
 }
 
 # Fungsi untuk menghidupkan dan mematikan mode pesawat
@@ -32,20 +19,22 @@ toggle_airplane_mode() {
 
 # Loop untuk mencari IP yang sesuai
 while true; do
-    rmnet0_ip=$(ip addr show rmnet0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+    rmnet0_ip=$(ip addr show rmnet0 | awk '/inet/ {print $2}' | cut -d'/' -f1)
     
-    if check_ip "$rmnet0_ip"; then
-        echo "IP rmnet0: $rmnet0_ip sesuai."
-        break
-    else
-        echo "IP rmnet0: $rmnet0_ip tidak sesuai."
-        toggle_airplane_mode
-
-        # Tunggu hingga IP muncul
-        until rmnet0_ip=$(ip addr show rmnet0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}'); do
-            sleep 1
-        done
+    if [ -n "$rmnet0_ip" ]; then
+        if check_ip "$rmnet0_ip"; then
+            echo "IP rmnet0: $rmnet0_ip sesuai."
+            break
+        else
+            echo "IP rmnet0: $rmnet0_ip tidak sesuai."
+            toggle_airplane_mode
+        fi
     fi
+
+    # Tunggu hingga IP muncul
+    while [ -z "$rmnet0_ip" ]; do
+        rmnet0_ip=$(ip addr show rmnet0 | awk '/inet/ {print $2}' | cut -d'/' -f1)
+    done
 done
 
 echo "Selesai."
