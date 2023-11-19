@@ -9,17 +9,16 @@ fi
 # Fungsi untuk mengecek apakah bagian kedua dari IP lebih dari atau sama dengan 100
 check_ip() {
     local ip="$1"
-    local second_octet=$(echo "$ip" | cut -d'.' -f2)
+    local second_octet
+
+    # Extract second octet using AWK
+    second_octet=$(echo "$ip" | awk -F'.' '{print $2}')
 
     # Check if second_octet is not empty
-    if [ -n "$second_octet" ]; then
-        if [ "$second_octet" -ge 100 ]; then
-            return 0  # IP sesuai
-        else
-            return 1  # IP tidak sesuai
-        fi
+    if [ -n "$second_octet" ] && [ "$second_octet" -ge 100 ]; then
+        return 0  # IP sesuai
     else
-        return 1  # IP tidak sesuai (considering empty as not suitable)
+        return 1  # IP tidak sesuai
     fi
 }
 
@@ -43,9 +42,8 @@ while true; do
         toggle_airplane_mode
 
         # Tunggu hingga IP muncul
-        while true; do
-            rmnet0_ip=$(ip addr show rmnet0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
-            [ -n "$rmnet0_ip" ] && break
+        until rmnet0_ip=$(ip addr show rmnet0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}'); do
+            sleep 1
         done
     fi
 done
