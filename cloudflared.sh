@@ -4,7 +4,7 @@
 name=$(basename $(readlink -f $0))
 token_id="YOUR_NEW_TOKEN_HERE"
 tmp_dir="/data/data/com.termux/files/usr/tmp"
-cmd="/data/data/com.termux/files/usr/bin/cloudflared --pidfile $HOME/$name.pid --autoupdate-freq 24h0m0s tunnel run --token $token_id"
+cmd="/data/data/com.termux/files/usr/bin/cloudflared --pidfile $tmp_dir/$name.pid --autoupdate-freq 24h0m0s tunnel run --token $token_id"
 pid_file="$tmp_dir/$name.pid"
 stdout_log="$tmp_dir/$name.log"
 stderr_log="$tmp_dir/$name.err"
@@ -17,11 +17,25 @@ is_running() {
     [ -f "$pid_file" ] && ps $(get_pid) > /dev/null 2>&1
 }
 
+check_internet() {
+    ping -c 1 google.com > /dev/null 2>&1
+    return $?
+}
+
+wait_for_internet() {
+    echo "Waiting for internet connection..."
+    until check_internet; do
+        sleep 1
+    done
+    echo "Internet connected."
+}
+
 case "$1" in
     start)
         if is_running; then
             echo "Already started"
         else
+            wait_for_internet
             echo "Starting $name"
             $cmd >> "$stdout_log" 2>> "$stderr_log" &
             echo $! > "$pid_file"
