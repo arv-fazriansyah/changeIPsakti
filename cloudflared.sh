@@ -30,6 +30,17 @@ wait_for_internet() {
     echo "Internet connected."
 }
 
+restart_if_needed() {
+    while is_running; do
+        if ! check_internet; then
+            echo "Internet connection lost. Restarting $name..."
+            $0 stop
+            $0 start
+        fi
+        sleep 10  # Adjust the interval as needed
+    done
+}
+
 case "$1" in
     start)
         if is_running; then
@@ -39,6 +50,7 @@ case "$1" in
             echo "Starting $name"
             $cmd >> "$stdout_log" 2>> "$stderr_log" &
             echo $! > "$pid_file"
+            restart_if_needed &
         fi
     ;;
     stop)
