@@ -5,8 +5,7 @@
 
 # Fungsi untuk mengecek apakah bagian kedua dari IP lebih dari atau sama dengan 100
 check_ip() {
-    local second_octet=$(ip addr show rmnet0 | awk '/inet/ {print $2}' | cut -d'.' -f2)
-    [ -n "$second_octet" ] && [ "$second_octet" -ge 100 ]
+    ip addr show rmnet0 | awk '/inet/ { split($2, a, "."); if (a[2] >= 100) exit 0; else exit 1 }'
 }
 
 # Fungsi untuk menghidupkan dan mematikan mode pesawat
@@ -26,11 +25,13 @@ while true; do
     if [ -n "$rmnet0_ip" ] && [ "$rmnet0_ip" != "$current_ip" ]; then
         current_ip="$rmnet0_ip"
 
-        if check_ip "$rmnet0_ip"; then
+        if check_ip; then
             echo "IP rmnet0: $rmnet0_ip sesuai."
         else
             echo "IP rmnet0: $rmnet0_ip tidak sesuai."
             toggle_airplane_mode
         fi
     fi
+
+    sleep 1
 done
