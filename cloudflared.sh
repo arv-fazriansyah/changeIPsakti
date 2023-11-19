@@ -1,10 +1,13 @@
 #!/data/data/com.termux/files/usr/bin/bash
+# termux-boot
+# sh /data/data/com.termux/files/usr/bin/cloudflareds start > /dev/null 2>&1 &
 name=$(basename $(readlink -f $0))
 token_id="YOUR_NEW_TOKEN_HERE"
+tmp_dir="/data/data/com.termux/files/usr/tmp"
 cmd="/data/data/com.termux/files/usr/bin/cloudflared --pidfile $HOME/$name.pid --autoupdate-freq 24h0m0s tunnel run --token $token_id"
-pid_file="$HOME/$name.pid"
-stdout_log="$HOME/$name.log"
-stderr_log="$HOME/$name.err"
+pid_file="$tmp_dir/$name.pid"
+stdout_log="$tmp_dir/$name.log"
+stderr_log="$tmp_dir/$name.err"
 
 get_pid() {
     cat "$pid_file"
