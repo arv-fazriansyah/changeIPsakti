@@ -1,4 +1,4 @@
-#!/system/bin/sh
+#!/data/data/com.termux/files/usr/bin/sh
 
 # Cek apakah perangkat sudah di-root
 [ "$(id -u)" -ne 0 ] && { echo "Script harus dijalankan sebagai root."; exit 1; }
@@ -35,3 +35,5 @@ while true; do
 
     sleep 1
 done
+
+# sudo nohup sh /data/data/com.termux/files/usr/bin/changeIPsakti > /dev/null 2>&1 &
