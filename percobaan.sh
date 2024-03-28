@@ -5,10 +5,13 @@
 
 # Fungsi untuk menghidupkan dan mematikan mode pesawat
 toggle_airplane_mode() {
-    settings put global airplane_mode_on 1 >/dev/null 2>&1
-    am broadcast -a android.intent.action.AIRPLANE_MODE >/dev/null 2>&1
-    settings put global airplane_mode_on 0 >/dev/null 2>&1
-    am broadcast -a android.intent.action.AIRPLANE_MODE >/dev/null 2>&1
+    if [ "$1" = "enable" ]; then
+        cmd connectivity airplane-mode enable >/dev/null 2>&1
+    elif [ "$1" = "disable" ]; then
+        cmd connectivity airplane-mode disable >/dev/null 2>&1
+    else
+        echo "Argumen tidak valid."
+    fi
 }
 
 current_ip=""
@@ -26,7 +29,9 @@ while true; do
             echo "IP Address: $current_ip sesuai."
         else
             echo "IP Address: $current_ip tidak sesuai."
-            toggle_airplane_mode
+            toggle_airplane_mode enable
+            sleep 5
+            toggle_airplane_mode disable
         fi
     fi
 
