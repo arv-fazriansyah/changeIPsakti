@@ -1,41 +1,34 @@
-#!/bin/bash
+#!/data/data/com.termux/files/usr/bin/sh
 
-# Fungsi untuk menghidupkan mode pesawat
-enable_airplane_mode() {
-    echo "Menyalakan mode pesawat..."
-    settings put global airplane_mode_on 1
-    am broadcast -a android.intent.action.AIRPLANE_MODE --ez state true
+# Cek apakah perangkat sudah di-root
+[ "$(id -u)" -ne 0 ] && { echo "Script harus dijalankan sebagai root."; exit 1; }
+
+# Fungsi untuk menghidupkan dan mematikan mode pesawat
+toggle_airplane_mode() {
+    settings put global airplane_mode_on 1 >/dev/null 2>&1
+    am broadcast -a android.intent.action.AIRPLANE_MODE >/dev/null 2>&1
+    settings put global airplane_mode_on 0 >/dev/null 2>&1
+    am broadcast -a android.intent.action.AIRPLANE_MODE >/dev/null 2>&1
 }
 
-# Fungsi untuk mematikan mode pesawat
-disable_airplane_mode() {
-    echo "Mematikan mode pesawat..."
-    settings put global airplane_mode_on 0
-    am broadcast -a android.intent.action.AIRPLANE_MODE --ez state false
-}
+current_ip=""
 
-# Mendapatkan IP dari output ip route
-get_ip_address() {
-    ip route | awk '/src/ {print $9}'
-}
+# Loop untuk memantau perubahan IP pada rmnet0
+while true; do
+    ip_address=$(ip route | awk '/src/ {print $9}')
+    
+    if [ -n "$ip_address" ] && [ "$ip_address" != "$current_ip" ]; then
+        current_ip="$ip_address"
 
-# Memisahkan bagian "A" dari alamat IP
-get_ip_part_a() {
-    echo $1 | awk -F'.' '{print $1}'
-}
+        # Memeriksa bagian kedua dari IP
+        ip_part_b=$(echo $current_ip | awk -F'.' '{print $2}')
+        if [ "$ip_part_b" -ge 100 ]; then
+            echo "IP Address: $current_ip sesuai."
+        else
+            echo "IP Address: $current_ip tidak sesuai."
+            toggle_airplane_mode
+        fi
+    fi
 
-# Cek IP
-ip_address=$(get_ip_address)
-ip_part_a=$(get_ip_part_a $ip_address)
-
-while [ $ip_part_a -lt 100 ]; do
-    enable_airplane_mode
-    sleep 5  # Tunggu 5 detik sebelum mematikan mode pesawat
-    disable_airplane_mode
-    echo "Menunggu sinyal muncul..."
-    sleep 10  # Tunggu 10 detik untuk sinyal muncul
-    ip_address=$(get_ip_address)
-    ip_part_a=$(get_ip_part_a $ip_address)
+    sleep 1
 done
-
-echo "IP Address memenuhi kondisi."
