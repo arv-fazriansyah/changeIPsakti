@@ -3,11 +3,6 @@
 # Cek apakah perangkat sudah di-root
 [ "$(id -u)" -ne 0 ] && { echo "Script harus dijalankan sebagai root."; exit 1; }
 
-# Fungsi untuk mengecek apakah bagian kedua dari IP lebih dari atau sama dengan 100
-check_ip() {
-    ip addr show rmnet0 | awk '/inet/ { split($2, a, "."); if (a[2] >= 100) exit 0; else exit 1 }'
-}
-
 # Fungsi untuk menghidupkan dan mematikan mode pesawat
 toggle_airplane_mode() {
     settings put global airplane_mode_on 1 >/dev/null 2>&1
@@ -20,20 +15,20 @@ current_ip=""
 
 # Loop untuk memantau perubahan IP pada rmnet0
 while true; do
-    rmnet0_ip=$(ip addr show rmnet0 | awk '/inet/ {print $2}' | cut -d'/' -f1)
+    ip_address=$(ip route | awk '/src/ {print $9}')
+    
+    if [ -n "$ip_address" ] && [ "$ip_address" != "$current_ip" ]; then
+        current_ip="$ip_address"
 
-    if [ -n "$rmnet0_ip" ] && [ "$rmnet0_ip" != "$current_ip" ]; then
-        current_ip="$rmnet0_ip"
-
-        if check_ip; then
-            echo "IP rmnet0: $rmnet0_ip sesuai."
+        # Memeriksa bagian kedua dari IP
+        ip_part_b=$(echo $current_ip | awk -F'.' '{print $2}')
+        if [ "$ip_part_b" -ge 100 ]; then
+            echo "IP Address: $current_ip sesuai."
         else
-            echo "IP rmnet0: $rmnet0_ip tidak sesuai."
+            echo "IP Address: $current_ip tidak sesuai."
             toggle_airplane_mode
         fi
     fi
 
     sleep 1
 done
-
-# sudo nohup sh /data/data/com.termux/files/usr/bin/changeIPsakti > /dev/null 2>&1 &
