@@ -8,12 +8,12 @@ toggle_airplane_mode() {
 # Loop untuk memantau perubahan IP pada rmnet0
 while true; do
     # Memeriksa alamat IP
-    ip_address=$(ip route | head -n 1 | awk '/src/ {print $9}')
+    ip_address=$(ip route | awk 'NR==1 && /src/ {print $9}')
     
     # Jika alamat IP tidak kosong
     if [ -n "$ip_address" ]; then
         # Memeriksa bagian kedua dari IP
-        ip_part_b=$(echo "$ip_address" | cut -d '.' -f 2)
+        ip_part_b=${ip_address##*.}
         
         # Jika bagian kedua dari IP lebih besar atau sama dengan 100
         if [ "$ip_part_b" -ge 100 ]; then
