@@ -8,7 +8,7 @@ toggle_airplane_mode() {
 # Loop untuk memantau perubahan IP pada rmnet0
 while true; do
     # Memeriksa alamat IP
-    ip_address=$(ip route | awk '/src/ {print $9}')
+    ip_address=$(ip route | head -n 1 | awk '/src/ {print $9}')
     
     # Jika alamat IP tidak kosong
     if [ -n "$ip_address" ]; then
